@@ -1,5 +1,5 @@
 import { m, AnimatePresence } from 'motion/react';
-import { useWeek } from '@/lib/week-context';
+import { useWeek } from '@/lib/useWeek';
 import { ExpandedDayContent } from './ExpandedDayContent';
 
 export function ExpandedDay() {
@@ -18,7 +18,7 @@ export function ExpandedDay() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="day-expanded-backdrop"
-                        onClick={() => setExpandedDate(null)}
+                        onClick={() => { setExpandedDate(null); }}
                     />
                     <ExpandedDayContent expandedDate={expandedDate} />
                 </div>

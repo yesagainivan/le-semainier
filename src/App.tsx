@@ -1,4 +1,4 @@
-import { useWeek } from '@/lib/week-context'
+import { useWeek } from '@/lib/useWeek';
 import { WeekGrid } from './components/week/WeekGrid'
 import { ExpandedDay } from './components/week/ExpandedDay'
 import { format, isSameMonth } from 'date-fns'
@@ -32,7 +32,7 @@ export default function App() {
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    return () => { document.removeEventListener('mousedown', handleClickOutside); }
   }, [])
 
   const changeAccent = (color: string) => {
@@ -76,7 +76,7 @@ export default function App() {
       <div
         ref={fabRef}
         className="settings-hint"
-        onClick={() => setIsPickerVisible(!isPickerVisible)}
+        onClick={() => { setIsPickerVisible(!isPickerVisible); }}
         aria-label="Personnaliser"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -88,11 +88,11 @@ export default function App() {
       <div ref={pickerRef} className={`accent-picker ${isPickerVisible ? 'visible' : ''}`}>
         <div className="accent-label">Couleur d'accent</div>
         <div className="accent-swatches">
-          <div className="swatch" onClick={() => changeAccent('#B85C38')} style={{ background: '#B85C38' }} title="Terracotta"></div>
-          <div className="swatch" onClick={() => changeAccent('#6B7F6A')} style={{ background: '#6B7F6A' }} title="Sauge"></div>
-          <div className="swatch" onClick={() => changeAccent('#7B6FA0')} style={{ background: '#7B6FA0' }} title="Lavande"></div>
-          <div className="swatch" onClick={() => changeAccent('#4A7A8A')} style={{ background: '#4A7A8A' }} title="Marine"></div>
-          <div className="swatch" onClick={() => changeAccent('#8A6A3A')} style={{ background: '#8A6A3A' }} title="Ocre"></div>
+          <div className="swatch" onClick={() => { changeAccent('#B85C38'); }} style={{ background: '#B85C38' }} title="Terracotta"></div>
+          <div className="swatch" onClick={() => { changeAccent('#6B7F6A'); }} style={{ background: '#6B7F6A' }} title="Sauge"></div>
+          <div className="swatch" onClick={() => { changeAccent('#7B6FA0'); }} style={{ background: '#7B6FA0' }} title="Lavande"></div>
+          <div className="swatch" onClick={() => { changeAccent('#4A7A8A'); }} style={{ background: '#4A7A8A' }} title="Marine"></div>
+          <div className="swatch" onClick={() => { changeAccent('#8A6A3A'); }} style={{ background: '#8A6A3A' }} title="Ocre"></div>
         </div>
       </div>
     </div>

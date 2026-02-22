@@ -1,73 +1,51 @@
-# React + TypeScript + Vite
+# Le Semainier
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Le Semainier** is an open-source, single-user weekly planner web application that brings the charm and elegance of a French paper agenda to the digital world. It combines the tactile satisfaction of a physical planner with the speed and convenience of modern web technology.
 
-Currently, two official plugins are available:
+## Core Vision
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+A weekly planner that feels like opening a beautiful French agenda on your desk. Not a productivity weapon, not a complex task management system — just a calm, familiar space to organize your week.
 
-## React Compiler
+1. **Open the app** → You see your week spread before you, like opening a physical agenda.
+2. **Each day is a tile** → Large, touchable, with a gentle summary of what's planned.
+3. **Click a day** → It expands smoothly into an editable view.
+4. **Plan naturally** → Add tasks, appointments, and notes with minimal friction.
+5. **Close and return** → Back to the peaceful weekly overview.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+This project strictly adheres to a robust, minimalist, and offline-first architecture.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+*   **Vite 6** + **React 19** + **TypeScript**
+*   **Bun** (Package management and script running)
+*   **Tailwind CSS v4** + **Shadcn/UI** (Selective primitives)
+*   **Dexie.js** (IndexedDB for local storage)
+*   **Motion** (Lazy loading for smooth layout animations)
+*   **eslint** (Strict type-checked config for maximum architectural soundness)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Because there is zero backend code to worry about, running the project locally is incredibly simple.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1.  **Install dependencies** using the ultra-fast Bun package manager:
+    ```bash
+    bun install
+    ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2.  **Start the development server:**
+    ```bash
+    bun run dev
+    ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+3.  **Strict Linting:**
+    The project enforces maximum type-safety. Ensure your code passes the linter before committing.
+    ```bash
+    bun run lint
+    bun run lint:fix
+    ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Contributing
+Please see `ROADMAP.md` in the repository root for the current phase goals and upcoming features. All pull requests must align with the vision laid out in the original propositions (simplicity, offline-first, no accounts required).
+
+---
+*"La semaine est un cadeau. Planifiez-la avec soin."*

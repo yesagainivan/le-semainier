@@ -16,7 +16,7 @@ export function DayTile({ date, dateStr, tasks, dayIndex, onExpand }: DayTilePro
     const isWeekend = dayIndex >= 5;
     const total = tasks.length;
     const done = tasks.filter(t => t.completed).length;
-    const fill = total > 0 ? Math.min(100, Math.round((total / 5) * 100)) : 0;
+    const fill = total > 0 ? String(Math.min(100, Math.round((total / 5) * 100))) : '0';
 
     const tileClass = `day-tile${isCurrentDay ? ' is-today' : ''}${isWeekend ? ' is-weekend' : ''}${total > 0 ? ' has-tasks' : ''}`;
 

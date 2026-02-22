@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type Task } from './db';
-import { useWeek } from './week-context';
+import { useWeek } from './useWeek';
 import { format, addDays } from 'date-fns';
 import { nanoid } from 'nanoid';
 import { useCallback } from 'react';

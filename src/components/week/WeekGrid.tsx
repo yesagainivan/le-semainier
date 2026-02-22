@@ -1,4 +1,4 @@
-import { useWeek } from '@/lib/week-context';
+import { useWeek } from '@/lib/useWeek';
 import { useTasks } from '@/lib/useTasks';
 import { addDays, format } from 'date-fns';
 import { DayTile } from './DayTile';
@@ -22,7 +22,7 @@ export function WeekGrid() {
                         dateStr={dateStr}
                         tasks={dayTasks}
                         dayIndex={index}
-                        onExpand={() => setExpandedDate(dateStr)}
+                        onExpand={() => { setExpandedDate(dateStr); }}
                     />
                 );
             })}
