@@ -18,16 +18,22 @@ export function ExpandedDayContent({ expandedDate }: ExpandedDayContentProps) {
 
     const dayTasks = tasks.filter(t => t.date === expandedDate);
 
-    // Runs exactly once on mount when the day is expanded
+    const notesRef = useRef(notes);
+
+    useEffect(() => {
+        notesRef.current = notes;
+    }, [notes]);
+
+    // Runs on mount
     useEffect(() => {
         setTimeout(() => inputRef.current?.focus(), 350);
         void getNote(expandedDate).then(setNotes);
-    }, [expandedDate, getNote]);
 
-    const handleClose = () => {
-        void saveNote(expandedDate, notes);
-        setExpandedDate(null);
-    };
+        // Native unmount cleanup cleanly guarantees save on click-away or dismiss
+        return () => {
+            void saveNote(expandedDate, notesRef.current);
+        };
+    }, [expandedDate, getNote, saveNote]);
 
     const handleAddTask = () => {
         if (!newTaskTitle.trim()) return;
@@ -39,6 +45,8 @@ export function ExpandedDayContent({ expandedDate }: ExpandedDayContentProps) {
         <m.div
             layoutId={`day-${expandedDate}`}
             className="day-expanded-panel"
+            onClick={(e) => { e.stopPropagation(); }}
+            onPointerDown={(e) => { e.stopPropagation(); }}
         >
             <div className="panel-header">
                 <div>
@@ -51,7 +59,7 @@ export function ExpandedDayContent({ expandedDate }: ExpandedDayContentProps) {
                 </div>
                 <button
                     className="panel-close"
-                    onClick={handleClose}
+                    onClick={() => { setExpandedDate(null); }}
                     aria-label="Fermer"
                 >
                     &#x2715;
@@ -139,7 +147,7 @@ export function ExpandedDayContent({ expandedDate }: ExpandedDayContentProps) {
                             if (e.key === 'Escape') {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                handleClose();
+                                setExpandedDate(null);
                             }
                         }}
                     />
