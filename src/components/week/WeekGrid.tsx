@@ -7,12 +7,11 @@ export function WeekGrid() {
     const { currentWeekStart, setExpandedDate } = useWeek();
     const { tasks } = useTasks();
 
-    // Create an array of 7 days starting from currentWeekStart
     const days = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 lg:gap-3 xl:gap-4 flex-1">
-            {days.map(day => {
+        <div className="week-grid">
+            {days.map((day, index) => {
                 const dateStr = format(day, 'yyyy-MM-dd');
                 const dayTasks = tasks.filter(t => t.date === dateStr);
 
@@ -22,6 +21,7 @@ export function WeekGrid() {
                         date={day}
                         dateStr={dateStr}
                         tasks={dayTasks}
+                        dayIndex={index}
                         onExpand={() => setExpandedDate(dateStr)}
                     />
                 );

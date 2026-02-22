@@ -7,48 +7,52 @@ interface DayTileProps {
     date: Date;
     dateStr: string;
     tasks: Task[];
+    dayIndex: number;
     onExpand: () => void;
 }
 
-export function DayTile({ date, dateStr, tasks, onExpand }: DayTileProps) {
+export function DayTile({ date, dateStr, tasks, dayIndex, onExpand }: DayTileProps) {
     const isCurrentDay = isToday(date);
+    const isWeekend = dayIndex >= 5;
+    const total = tasks.length;
+    const done = tasks.filter(t => t.completed).length;
+    const fill = total > 0 ? Math.min(100, Math.round((total / 5) * 100)) : 0;
+
+    const tileClass = `day-tile${isCurrentDay ? ' is-today' : ''}${isWeekend ? ' is-weekend' : ''}${total > 0 ? ' has-tasks' : ''}`;
 
     return (
-        <m.button
+        <m.div
             layoutId={`day-${dateStr}`}
+            className={tileClass}
             onClick={onExpand}
-            className={`
-        flex flex-col flex-1 h-full min-h-[400px] p-4 text-left rounded-2xl transition-all duration-300
-        hover:shadow-md hover:-translate-y-1 bg-card border group outline-none focus-visible:ring-2 focus-visible:ring-ring
-        ${isCurrentDay ? 'border-primary shadow-sm' : 'border-border/50 hover:border-border'}
-      `}
         >
-            <header className="mb-4">
-                <h3 className="text-sm font-semibold capitalize text-muted-foreground group-hover:text-foreground transition-colors">
-                    {format(date, 'EEEE', { locale: fr })}
-                </h3>
-                <p className={`text-2xl font-bold font-heading mt-1 ${isCurrentDay ? 'text-primary' : ''}`}>
-                    {format(date, 'd')}
-                </p>
-            </header>
-
-            <div className="flex-1 w-full space-y-2">
-                {tasks.length === 0 ? (
-                    <div className="h-full w-full rounded-lg border border-dashed border-border/40 opacity-50 flex items-center justify-center">
-                        <span className="text-xs text-muted-foreground/70">Vide</span>
-                    </div>
-                ) : (
-                    tasks.map(task => (
-                        <div key={task.id} className="text-sm p-2 rounded-md bg-muted/50 truncate border border-transparent">
-                            {task.title}
-                        </div>
-                    ))
+            <div className="day-header">
+                <div>
+                    <div className="day-name">{format(date, 'EEEE', { locale: fr })}</div>
+                    <div className="day-num">{format(date, 'd')}</div>
+                    <div className="day-month">{format(date, 'MMMM', { locale: fr })}</div>
+                </div>
+                {total > 0 && (
+                    <div className="day-count"><span>{done}</span>/{total}</div>
                 )}
             </div>
 
-            <footer className="mt-4 text-xs font-medium text-muted-foreground/50 group-hover:text-muted-foreground transition-colors">
-                {tasks.length} tâche{tasks.length !== 1 ? 's' : ''}
-            </footer>
-        </m.button>
+            <div className="day-fullness-bar">
+                <div className="day-fullness-fill" style={{ width: `${fill}%` }}></div>
+            </div>
+
+            <div className="task-list">
+                {tasks.slice(0, 3).map(t => (
+                    <div key={t.id} className={`task-item${t.completed ? ' is-done' : ''}`}>
+                        <span className={`task-dot${t.tag === 'travail' ? ' terracotta' : t.tag === 'perso' ? ' sage' : ''}`}></span>
+                        {t.time && <span className="task-time">{t.time}</span>}
+                        <span className="task-text">{t.title}</span>
+                    </div>
+                ))}
+                {total > 3 && (
+                    <div className="task-more">+{total - 3} de plus</div>
+                )}
+            </div>
+        </m.div>
     );
 }

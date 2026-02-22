@@ -1,62 +1,100 @@
-import { useWeek } from './lib/week-context'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
-import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { useWeek } from '@/lib/week-context'
 import { WeekGrid } from './components/week/WeekGrid'
 import { ExpandedDay } from './components/week/ExpandedDay'
+import { format, isSameMonth } from 'date-fns'
+import { fr } from 'date-fns/locale'
+import { useState, useRef, useEffect } from 'react'
 
-function App() {
+export default function App() {
   const { currentWeekStart, nextWeek, prevWeek, jumpToToday } = useWeek()
 
-  // Example formatting: "Février 2026"
-  const monthLabel = format(currentWeekStart, 'MMMM yyyy', { locale: fr })
+  const endOfWeek = new Date(currentWeekStart)
+  endOfWeek.setDate(endOfWeek.getDate() + 6)
+
+  let weekLabel = ''
+  if (isSameMonth(currentWeekStart, endOfWeek)) {
+    weekLabel = `${format(currentWeekStart, 'd')}–${format(endOfWeek, 'd MMMM yyyy', { locale: fr })}`
+  } else {
+    weekLabel = `${format(currentWeekStart, 'd MMM', { locale: fr })} – ${format(endOfWeek, 'd MMM yyyy', { locale: fr })}`
+  }
+
+  const [isPickerVisible, setIsPickerVisible] = useState(false)
+  const pickerRef = useRef<HTMLDivElement>(null)
+  const fabRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        pickerRef.current && !pickerRef.current.contains(event.target as Node) &&
+        fabRef.current && !fabRef.current.contains(event.target as Node)
+      ) {
+        setIsPickerVisible(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const changeAccent = (color: string) => {
+    document.documentElement.style.setProperty('--terracotta', color)
+    setIsPickerVisible(false)
+  }
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
-      <header className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border/50">
-        <div className="flex items-center gap-2 text-primary">
-          <CalendarIcon className="w-5 h-5" />
-          <h1 className="text-xl font-heading font-bold tracking-tight">Le Semainier</h1>
+    <div className="app">
+      <header>
+        <div className="wordmark">
+          <span className="wordmark-title">Le Semainier</span>
+          <span className="wordmark-rule"></span>
+          <span className="wordmark-sub">Agenda hebdomadaire</span>
         </div>
-
-        <div className="flex items-center gap-4">
-          <span className="text-sm font-medium capitalize text-muted-foreground mr-4">
-            {monthLabel}
-          </span>
-          <div className="flex items-center rounded-md border border-border/50 overflow-hidden bg-card shadow-sm">
-            <button
-              onClick={prevWeek}
-              className="p-2 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground active:bg-muted/80"
-              aria-label="Previous week"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <div className="w-px h-4 bg-border/50" />
-            <button
-              onClick={jumpToToday}
-              className="px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors text-muted-foreground hover:text-foreground active:bg-muted/80"
-            >
-              Aujourd'hui
-            </button>
-            <div className="w-px h-4 bg-border/50" />
-            <button
-              onClick={nextWeek}
-              className="p-2 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground active:bg-muted/80"
-              aria-label="Next week"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+        <div className="header-right">
+          <div className="week-nav">
+            <button className="nav-btn" onClick={prevWeek} aria-label="Semaine précédente">&#8592;</button>
+            <span className="week-label">{weekLabel}</span>
+            <button className="nav-btn" onClick={nextWeek} aria-label="Semaine suivante">&#8594;</button>
           </div>
+          <button className="today-btn" onClick={jumpToToday}>Aujourd'hui</button>
         </div>
       </header>
 
-      <main className="max-w-[1600px] mx-auto p-4 sm:p-6 md:p-8 lg:p-10 flex-1 flex flex-col">
+      <div className="week-strip">
         <WeekGrid />
-      </main>
+      </div>
+
+      <footer>
+        <span className="footer-quote">« La semaine est un cadeau. Planifiez-la avec soin. »</span>
+        <div className="footer-actions">
+          <button className="footer-btn">Exporter JSON</button>
+          <button className="footer-btn">Exporter Markdown</button>
+          <button className="footer-btn">Importer</button>
+        </div>
+      </footer>
 
       <ExpandedDay />
+
+      <div
+        ref={fabRef}
+        className="settings-hint"
+        onClick={() => setIsPickerVisible(!isPickerVisible)}
+        aria-label="Personnaliser"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+      </div>
+
+      <div ref={pickerRef} className={`accent-picker ${isPickerVisible ? 'visible' : ''}`}>
+        <div className="accent-label">Couleur d'accent</div>
+        <div className="accent-swatches">
+          <div className="swatch" onClick={() => changeAccent('#B85C38')} style={{ background: '#B85C38' }} title="Terracotta"></div>
+          <div className="swatch" onClick={() => changeAccent('#6B7F6A')} style={{ background: '#6B7F6A' }} title="Sauge"></div>
+          <div className="swatch" onClick={() => changeAccent('#7B6FA0')} style={{ background: '#7B6FA0' }} title="Lavande"></div>
+          <div className="swatch" onClick={() => changeAccent('#4A7A8A')} style={{ background: '#4A7A8A' }} title="Marine"></div>
+          <div className="swatch" onClick={() => changeAccent('#8A6A3A')} style={{ background: '#8A6A3A' }} title="Ocre"></div>
+        </div>
+      </div>
     </div>
   )
 }
-
-export default App

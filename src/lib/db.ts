@@ -6,6 +6,7 @@ export interface Task {
     title: string;
     completed: boolean;
     time?: string;       // "14:30" — optional
+    tag?: string;        // 'travail', 'perso', etc
     notes?: string;
     order: number;       // for manual drag ordering within a day
     createdAt: number;
