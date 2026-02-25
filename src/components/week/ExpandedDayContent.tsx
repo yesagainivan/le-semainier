@@ -1,39 +1,48 @@
 import { m } from 'motion/react';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useTasks } from '@/lib/useTasks';
+import { useTasks, useNoteForDate } from '@/lib/useTasks';
 import { useState, useRef, useEffect } from 'react';
 import { useWeek } from '@/lib/useWeek';
+import { useDebouncedCallback } from 'use-debounce';
 
 interface ExpandedDayContentProps {
     expandedDate: string;
+    onRequestClose?: () => void;
+    onNotesSync?: (notes: string) => void;
 }
 
-export function ExpandedDayContent({ expandedDate }: ExpandedDayContentProps) {
+export function ExpandedDayContent({ expandedDate, onRequestClose, onNotesSync }: ExpandedDayContentProps) {
     const { setExpandedDate } = useWeek();
-    const { tasks, addTask, toggleTask, updateTask, deleteTask, getNote, saveNote } = useTasks();
+    const { tasks, addTask, toggleTask, updateTask, deleteTask, saveNote } = useTasks();
+    const liveNote = useNoteForDate(expandedDate);
     const [newTaskTitle, setNewTaskTitle] = useState('');
     const [notes, setNotes] = useState('');
+    const [prevRemoteContent, setPrevRemoteContent] = useState<string | undefined>(undefined);
+    const [isNoteFocused, setIsNoteFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
-
     const dayTasks = tasks.filter(t => t.date === expandedDate);
 
-    const notesRef = useRef(notes);
+    const debouncedSaveNote = useDebouncedCallback((val: string) => {
+        void saveNote(expandedDate, val);
+    }, 500);
 
+    // Reactive UI sync: update state during render to avoid cascading re-renders (React 18 Best Practice)
+    const currentRemoteContent = liveNote?.content ?? '';
+    if (liveNote !== undefined && currentRemoteContent !== prevRemoteContent) {
+        setPrevRemoteContent(currentRemoteContent);
+        if (!isNoteFocused) {
+            setNotes(currentRemoteContent);
+        }
+    }
+
+    // Sync latest notes upward to parent (ExpandedDay) so it can safely save before triggering exit unmounts.
+    const isLoaded = liveNote !== undefined;
     useEffect(() => {
-        notesRef.current = notes;
-    }, [notes]);
-
-    // Runs on mount
-    useEffect(() => {
-        setTimeout(() => inputRef.current?.focus(), 350);
-        void getNote(expandedDate).then(setNotes);
-
-        // Native unmount cleanup cleanly guarantees save on click-away or dismiss
-        return () => {
-            void saveNote(expandedDate, notesRef.current);
-        };
-    }, [expandedDate, getNote, saveNote]);
+        if (isLoaded && onNotesSync) {
+            onNotesSync(notes);
+        }
+    }, [notes, isLoaded, onNotesSync]);
 
     const handleAddTask = () => {
         if (!newTaskTitle.trim()) return;
@@ -47,6 +56,7 @@ export function ExpandedDayContent({ expandedDate }: ExpandedDayContentProps) {
             className="day-expanded-panel"
             onClick={(e) => { e.stopPropagation(); }}
             onPointerDown={(e) => { e.stopPropagation(); }}
+            onAnimationComplete={() => inputRef.current?.focus()}
         >
             <div className="panel-header">
                 <div>
@@ -59,7 +69,10 @@ export function ExpandedDayContent({ expandedDate }: ExpandedDayContentProps) {
                 </div>
                 <button
                     className="panel-close"
-                    onClick={() => { setExpandedDate(null); }}
+                    onClick={() => {
+                        if (onRequestClose) onRequestClose();
+                        else setExpandedDate(null);
+                    }}
                     aria-label="Fermer"
                 >
                     &#x2715;
@@ -166,7 +179,15 @@ export function ExpandedDayContent({ expandedDate }: ExpandedDayContentProps) {
                         placeholder="Notes, pensées, rappels…"
                         rows={3}
                         value={notes}
-                        onChange={(e) => { setNotes(e.target.value); }}
+                        onChange={(e) => {
+                            setNotes(e.target.value);
+                            debouncedSaveNote(e.target.value);
+                        }}
+                        onFocus={() => { setIsNoteFocused(true); }}
+                        onBlur={() => {
+                            setIsNoteFocused(false);
+                            void saveNote(expandedDate, notes);
+                        }}
                     />
                 </div>
             </div>

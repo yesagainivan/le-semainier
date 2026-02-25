@@ -13,6 +13,7 @@ export function WeekGrid() {
         <div className="week-grid">
             {days.map((day, index) => {
                 const dateStr = format(day, 'yyyy-MM-dd');
+                const todayStr = format(new Date(), 'yyyy-MM-dd');
                 const dayTasks = tasks.filter(t => t.date === dateStr);
 
                 return (
@@ -20,6 +21,7 @@ export function WeekGrid() {
                         key={dateStr}
                         date={day}
                         dateStr={dateStr}
+                        isCurrentDay={dateStr === todayStr}
                         tasks={dayTasks}
                         dayIndex={index}
                         onExpand={() => { setExpandedDate(dateStr); }}

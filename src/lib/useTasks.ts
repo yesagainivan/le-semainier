@@ -47,13 +47,8 @@ export function useTasks() {
         await db.tasks.update(id, { date: newDate, order: newOrder, updatedAt: Date.now() });
     }, []);
 
-    const getNote = useCallback(async (date: string) => {
-        const setting = await db.settings.get(`note-${date}`);
-        return (setting?.value as string) || '';
-    }, []);
-
-    const saveNote = useCallback(async (date: string, note: string) => {
-        await db.settings.put({ key: `note-${date}`, value: note });
+    const saveNote = useCallback(async (date: string, content: string) => {
+        await db.notes.put({ date, content, updatedAt: Date.now() });
     }, []);
 
     return {
@@ -63,7 +58,17 @@ export function useTasks() {
         deleteTask,
         updateTask,
         moveTask,
-        getNote,
         saveNote
     };
+}
+
+export function useNoteForDate(date: string | null) {
+    return useLiveQuery(
+        async () => {
+            if (!date) return null;
+            const note = await db.notes.get(date);
+            return note ?? null;
+        },
+        [date]
+    );
 }

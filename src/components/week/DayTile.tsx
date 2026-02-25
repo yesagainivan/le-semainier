@@ -1,4 +1,4 @@
-import { format, isToday } from 'date-fns';
+import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { type Task } from '@/lib/db';
 import { m } from 'motion/react';
@@ -6,13 +6,13 @@ import { m } from 'motion/react';
 interface DayTileProps {
     date: Date;
     dateStr: string;
+    isCurrentDay: boolean;
     tasks: Task[];
     dayIndex: number;
     onExpand: () => void;
 }
 
-export function DayTile({ date, dateStr, tasks, dayIndex, onExpand }: DayTileProps) {
-    const isCurrentDay = isToday(date);
+export function DayTile({ date, dateStr, isCurrentDay, tasks, dayIndex, onExpand }: DayTileProps) {
     const isWeekend = dayIndex >= 5;
     const total = tasks.length;
     const done = tasks.filter(t => t.completed).length;
