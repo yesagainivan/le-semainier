@@ -5,6 +5,7 @@ import { format, isSameMonth } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useState, useRef, useEffect } from 'react'
 import { db } from '@/lib/db'
+import { exportJSON, importJSON, exportMarkdown, exportICS } from '@/lib/exportImport'
 
 export default function App() {
   const { currentWeekStart, nextWeek, prevWeek, jumpToToday } = useWeek()
@@ -22,6 +23,7 @@ export default function App() {
   const [isPickerVisible, setIsPickerVisible] = useState(false)
   const pickerRef = useRef<HTMLDivElement>(null)
   const fabRef = useRef<HTMLDivElement>(null)
+  const importInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -51,6 +53,18 @@ export default function App() {
     setIsPickerVisible(false);
   };
 
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    void importJSON(file).then(({ imported }) => {
+      alert(`Import reussi : ${String(imported)} element(s) importe(s).`);
+    }).catch((err: unknown) => {
+      alert(err instanceof Error ? err.message : "Erreur lors de l'import.");
+    });
+    // Reset so the same file can be re-imported if needed
+    e.target.value = '';
+  };
+
   return (
     <div className="app">
       <header>
@@ -74,11 +88,19 @@ export default function App() {
       </div>
 
       <footer>
-        <span className="footer-quote">« La semaine est un cadeau. Planifiez-la avec soin. »</span>
+        <span className="footer-quote">&#171; La semaine est un cadeau. Planifiez-la avec soin. &#187;</span>
         <div className="footer-actions">
-          <button className="footer-btn">Exporter JSON</button>
-          <button className="footer-btn">Exporter Markdown</button>
-          <button className="footer-btn">Importer</button>
+          <button className="footer-btn" onClick={() => { void exportJSON(); }}>Exporter JSON</button>
+          <button className="footer-btn" onClick={() => { void exportMarkdown(currentWeekStart); }}>Exporter Markdown</button>
+          <button className="footer-btn" onClick={() => { void exportICS(currentWeekStart); }}>Exporter ICS</button>
+          <button className="footer-btn" onClick={() => { importInputRef.current?.click(); }}>Importer</button>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".json"
+            style={{ display: 'none' }}
+            onChange={handleImport}
+          />
         </div>
       </footer>
 
