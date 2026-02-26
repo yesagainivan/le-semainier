@@ -4,6 +4,7 @@ import { ExpandedDay } from './components/week/ExpandedDay'
 import { format, isSameMonth } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useState, useRef, useEffect } from 'react'
+import { db } from '@/lib/db'
 
 export default function App() {
   const { currentWeekStart, nextWeek, prevWeek, jumpToToday } = useWeek()
@@ -35,10 +36,20 @@ export default function App() {
     return () => { document.removeEventListener('mousedown', handleClickOutside); }
   }, [])
 
+  // Load persisted accent color on mount
+  useEffect(() => {
+    void db.settings.get('accent-color').then((setting) => {
+      if (setting?.value && typeof setting.value === 'string') {
+        document.documentElement.style.setProperty('--terracotta', setting.value);
+      }
+    });
+  }, []);
+
   const changeAccent = (color: string) => {
-    document.documentElement.style.setProperty('--terracotta', color)
-    setIsPickerVisible(false)
-  }
+    document.documentElement.style.setProperty('--terracotta', color);
+    void db.settings.put({ key: 'accent-color', value: color });
+    setIsPickerVisible(false);
+  };
 
   return (
     <div className="app">

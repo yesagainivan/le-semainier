@@ -160,7 +160,8 @@ export function ExpandedDayContent({ expandedDate, onRequestClose, onNotesSync }
                             if (e.key === 'Escape') {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                setExpandedDate(null);
+                                if (onRequestClose) onRequestClose();
+                                else setExpandedDate(null);
                             }
                         }}
                     />
@@ -184,10 +185,7 @@ export function ExpandedDayContent({ expandedDate, onRequestClose, onNotesSync }
                             debouncedSaveNote(e.target.value);
                         }}
                         onFocus={() => { setIsNoteFocused(true); }}
-                        onBlur={() => {
-                            setIsNoteFocused(false);
-                            void saveNote(expandedDate, notes);
-                        }}
+                        onBlur={() => { setIsNoteFocused(false); }}
                     />
                 </div>
             </div>

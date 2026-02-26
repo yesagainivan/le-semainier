@@ -16,7 +16,7 @@ This roadmap is derived directly from the original `origin/proposition.md` visio
 - [x] Basic task creation and editing (Title, Time, Tag toggling)
 - [x] Local storage with `Dexie.js` (IndexedDB) and `useLiveQuery`
 - [x] Save Notes to `localStorage`/IndexedDb
-- [ ] Drag-and-drop tasks between days (`dnd-kit`)
+- [ ] Drag-and-drop tasks between days (`dnd-kit`) (to be assessed as needed or not)
 - [ ] PWA manifest + service worker (installable, offline assets caching)
 - [ ] Export/import (JSON and Markdown)
 
