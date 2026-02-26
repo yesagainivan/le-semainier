@@ -15,20 +15,21 @@ This roadmap is derived directly from the original `origin/proposition.md` visio
 - [x] Day expansion: Smooth layout-aware animations (`motion`)
 - [x] Basic task creation and editing (Title, Time, Tag toggling)
 - [x] Local storage with `Dexie.js` (IndexedDB) and `useLiveQuery`
-- [x] Save Notes to `localStorage`/IndexedDb
-- [ ] Drag-and-drop tasks between days (`dnd-kit`) (to be assessed as needed or not)
-- [ ] PWA manifest + service worker (installable, offline assets caching)
-- [ ] Export/import (JSON and Markdown)
+- [x] Save Notes to IndexedDB (per-day, dedicated `notes` table)
+- [x] Customizable accent colors (persisted to Dexie `settings` table)
+- [x] Keyboard shortcuts in day view: `Escape` to close, `←`/`→` to navigate days
+- [ ] Drag-and-drop tasks between days (`dnd-kit`) — deferred until it can be done perfectly
+- [ ] PWA manifest + service worker (installable, offline assets caching) — `vite-plugin-pwa` installed, config pending
+- [ ] Export/import: JSON (full dump/restore), Markdown (weekly summary), ICS (calendar import)
 
 ---
 
 ## Phase 2: Polish (Upcoming)
 *Goal: Add quality-of-life features without adding clutter.*
 
-- [ ] Keyboard shortcuts globally (already started in day view)
+- [ ] Customizable font choice (persisted to `settings` table)
 - [ ] Time-blocking view option (vs. pure list)
 - [ ] Responsive design check (Mobile portrait polish)
-- [ ] ICS export (Importable into Apple Calendar, Google Calendar)
 - [ ] Soft Dark Mode
 
 ---
