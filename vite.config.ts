@@ -15,8 +15,11 @@ export default defineConfig({
       manifest: {
         name: 'Le Semainier',
         short_name: 'Semainier',
-        description: 'A calm, familiar weekly planner',
-        theme_color: '#F9F9F9',
+        description: 'Votre agenda hebdomadaire',
+        theme_color: '#F5F0E8',
+        background_color: '#F5F0E8',
+        display: 'standalone',
+        start_url: '/',
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -29,6 +32,9 @@ export default defineConfig({
             type: 'image/png'
           }
         ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,woff2,png,svg}']
       }
     })
   ],

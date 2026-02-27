@@ -19,8 +19,8 @@ This roadmap is derived directly from the original `origin/proposition.md` visio
 - [x] Customizable accent colors (persisted to Dexie `settings` table)
 - [x] Keyboard shortcuts in day view: `Escape` to close, `←`/`→` to navigate days
 - [ ] Drag-and-drop tasks between days (`dnd-kit`) — deferred until it can be done perfectly
-- [ ] PWA manifest + service worker (installable, offline assets caching) — `vite-plugin-pwa` installed, config pending
-- [ ] Export/import: JSON (full dump/restore), Markdown (weekly summary), ICS (calendar import)
+- [x] PWA manifest + service worker (installable, offline assets caching)
+- [x] Export/import: JSON (full dump/restore), Markdown (weekly summary), ICS (calendar import)
 
 ---
 
@@ -29,7 +29,7 @@ This roadmap is derived directly from the original `origin/proposition.md` visio
 
 - [ ] Customizable font choice (persisted to `settings` table)
 - [ ] Time-blocking view option (vs. pure list)
-- [ ] Responsive design check (Mobile portrait polish)
+- [x] Responsive design check (Mobile portrait polish)
 - [ ] Soft Dark Mode
 
 ---
