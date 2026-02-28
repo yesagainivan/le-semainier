@@ -159,11 +159,24 @@ header {
     border-radius: 2px;
     cursor: pointer;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .today-btn:hover {
     background: var(--terracotta);
     color: var(--cream);
+}
+
+.today-icon {
+    display: none;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 /* ── Week strip ────────────────────────────────────── */
@@ -816,6 +829,105 @@ footer {
     animation-delay: 0.27s;
 }
 
+/* ── Data Menu (Export/Import) ───────────────── */
+.data-menu-container {
+    position: relative;
+    display: inline-flex;
+    margin-right: 16px;
+    align-items: center;
+}
+
+.data-menu-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    border-radius: 50%;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.data-menu-btn:hover,
+.data-menu-btn.active {
+    color: var(--terracotta);
+    background: var(--bg-hover);
+}
+
+.data-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    transform: translateY(-10px);
+    background: var(--cream);
+    border: 1px solid var(--border-light, rgba(26, 22, 18, 0.12));
+    border-radius: 12px;
+    padding: 8px 0;
+    box-shadow: 0 10px 40px rgba(26, 22, 18, 0.08), 0 2px 10px rgba(26, 22, 18, 0.04);
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 100;
+    min-width: 220px;
+}
+
+.data-menu.visible {
+    pointer-events: auto;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.data-menu-section {
+    padding: 4px 8px;
+}
+
+.data-menu-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+    padding: 4px 12px 8px;
+    font-weight: 500;
+}
+
+.data-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+}
+
+.data-menu-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.data-menu-item svg {
+    color: var(--text-tertiary);
+    transition: color 0.15s ease;
+}
+
+.data-menu-item:hover svg {
+    color: var(--terracotta);
+}
+
+.data-menu-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 4px 0;
+}
+
 /* ── Mobile & Responsive ───────────────────────────── */
 @media (max-width: 768px) {
     .app {
@@ -832,6 +944,22 @@ footer {
     .header-right {
         width: 100%;
         justify-content: space-between;
+    }
+
+    .header-actions {
+        gap: 8px;
+    }
+
+    .today-text {
+        display: none;
+    }
+
+    .today-icon {
+        display: block;
+    }
+
+    .today-btn {
+        padding: 6px;
     }
 
     .week-strip {

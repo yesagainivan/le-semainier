@@ -2,6 +2,7 @@ import { db, type Task, type Note } from './db';
 import { createEvents, type EventAttributes } from 'ics';
 import { format, addDays, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { nanoid } from 'nanoid';
 
 // ─── Shared helper ────────────────────────────────────────────────────────────
 
@@ -177,4 +178,91 @@ export async function exportICS(weekStart: Date): Promise<void> {
 
     const filename = `semainier-${weekStartStr}.ics`;
     downloadFile(value, filename, 'text/calendar');
+}
+
+// ─── ICS Import (Bespoke Parser) ─────────────────────────────────────────────
+
+export async function importICS(file: File): Promise<{ imported: number; skipped: string[] }> {
+    const text = await file.text();
+    const tasks = parseICS(text);
+
+    if (tasks.length === 0) {
+        throw new Error("Aucun événement valide trouvé dans le fichier ICS.");
+    }
+
+    // Insert tasks. We use bulkAdd because these are new tasks (new nanoids)
+    await db.tasks.bulkAdd(tasks);
+
+    return { imported: tasks.length, skipped: [] };
+}
+
+function parseICS(icsData: string): Task[] {
+    const tasks: Task[] = [];
+
+    // Split into VEVENT blocks
+    const events = icsData.split(/BEGIN:VEVENT/i).slice(1); // skip the preamble
+
+    for (const eventBlock of events) {
+        // Fast fail if it's not a complete block
+        if (!/END:VEVENT/i.test(eventBlock)) continue;
+
+        // Extract DTSTART
+        // 1. Specific time: DTSTART;TZID=...:20260224T143000
+        // 2. All day: DTSTART;VALUE=DATE:20260224
+        // 3. Simple UTC: DTSTART:20260224T143000Z
+        const dtstartMatch = /DTSTART(?:[^:]*):(\d{8})(?:T(\d{6})Z?)?/i.exec(eventBlock);
+        if (!dtstartMatch) continue; // Cannot import an event without a date
+
+        const dateStrRaw = dtstartMatch[1]; // YYYYMMDD
+        const timeStrRaw = dtstartMatch[2]; // HHMMSS (optional)
+
+        if (!dateStrRaw) continue;
+
+        // Format to YYYY-MM-DD
+        const year = dateStrRaw.slice(0, 4);
+        const month = dateStrRaw.slice(4, 6);
+        const day = dateStrRaw.slice(6, 8);
+        const date = `${year}-${month}-${day}`;
+
+        let time: string | undefined = undefined;
+        if (timeStrRaw) {
+            // Format to HH:mm
+            const hour = timeStrRaw.slice(0, 2);
+            const minute = timeStrRaw.slice(2, 4);
+            // If the user imports a 00:00 event, we still consider it timed in their calendar
+            time = `${hour}:${minute}`;
+        }
+
+        // Extract SUMMARY (handle folding later if needed, but simple match usually works for short titles)
+        const summaryMatch = /SUMMARY(?:\s*;\s*[^:]*)?:(.*)(?:\r?\n|$)/i.exec(eventBlock);
+        let title = summaryMatch ? summaryMatch[1].trim() : 'Nouvel événement';
+
+        // Unescape standard ICS escapes
+        title = title.replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\\\/g, '\\').replace(/\\n/gi, '\n');
+
+        // Extract DESCRIPTION to try and find an exported tag (e.g. "Tag: travail")
+        let tag: string | undefined = undefined;
+        const descMatch = /DESCRIPTION(?:\s*;\s*[^:]*)?:(.*)(?:\r?\n|$)/i.exec(eventBlock);
+        if (descMatch) {
+            const desc = descMatch[1].replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\\\/g, '\\').replace(/\\n/gi, '\n');
+            const tagMatch = /Tag:\s*(\S+)/i.exec(desc);
+            if (tagMatch) {
+                tag = tagMatch[1];
+            }
+        }
+
+        tasks.push({
+            id: nanoid(), // Generate a fresh ID for imported tasks
+            title,
+            date,
+            time,
+            tag,
+            completed: false,
+            order: 0, // It will be pushed to the top of the day
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        });
+    }
+
+    return tasks;
 }

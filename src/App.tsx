@@ -5,7 +5,8 @@ import { format, isSameMonth } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useState, useRef, useEffect } from 'react'
 import { db } from '@/lib/db'
-import { exportJSON, importJSON, exportMarkdown, exportICS } from '@/lib/exportImport'
+import { exportJSON, importJSON, exportMarkdown, exportICS, importICS } from '@/lib/exportImport'
+import { Database, Download, Upload, Calendar } from 'lucide-react'
 
 export default function App() {
   const { currentWeekStart, nextWeek, prevWeek, jumpToToday } = useWeek()
@@ -21,9 +22,12 @@ export default function App() {
   }
 
   const [isPickerVisible, setIsPickerVisible] = useState(false)
+  const [isDataMenuOpen, setIsDataMenuOpen] = useState(false)
   const pickerRef = useRef<HTMLDivElement>(null)
   const fabRef = useRef<HTMLDivElement>(null)
   const importInputRef = useRef<HTMLInputElement>(null)
+  const dataMenuRef = useRef<HTMLDivElement>(null)
+  const dataBtnRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -32,6 +36,12 @@ export default function App() {
         fabRef.current && !fabRef.current.contains(event.target as Node)
       ) {
         setIsPickerVisible(false)
+      }
+      if (
+        dataMenuRef.current && !dataMenuRef.current.contains(event.target as Node) &&
+        dataBtnRef.current && !dataBtnRef.current.contains(event.target as Node)
+      ) {
+        setIsDataMenuOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -56,11 +66,16 @@ export default function App() {
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    void importJSON(file).then(({ imported }) => {
+
+    const promise = file.name.endsWith('.ics') ? importICS(file) : importJSON(file);
+
+    void promise.then(({ imported }) => {
       alert(`Import reussi : ${String(imported)} element(s) importe(s).`);
+      setIsDataMenuOpen(false);
     }).catch((err: unknown) => {
       alert(err instanceof Error ? err.message : "Erreur lors de l'import.");
     });
+
     // Reset so the same file can be re-imported if needed
     e.target.value = '';
   };
@@ -79,7 +94,44 @@ export default function App() {
             <span className="week-label">{weekLabel}</span>
             <button className="nav-btn" onClick={nextWeek} aria-label="Semaine suivante">&#8594;</button>
           </div>
-          <button className="today-btn" onClick={jumpToToday}>Aujourd'hui</button>
+          <div className="header-actions">
+            <button className="today-btn" onClick={jumpToToday} aria-label="Aujourd'hui" title="Aujourd'hui">
+              <span className="today-text">Aujourd'hui</span>
+              <Calendar className="today-icon" size={16} strokeWidth={2} />
+            </button>
+            <div className="data-menu-container">
+              <button
+                ref={dataBtnRef}
+                className={`data-menu-btn ${isDataMenuOpen ? 'active' : ''}`}
+                onClick={() => { setIsDataMenuOpen(!isDataMenuOpen); }}
+                aria-label="Données"
+                title="Options de données"
+              >
+                <Database size={20} strokeWidth={1.5} />
+              </button>
+              <div ref={dataMenuRef} className={`data-menu ${isDataMenuOpen ? 'visible' : ''}`}>
+                <div className="data-menu-section">
+                  <div className="data-menu-label">Exporter</div>
+                  <button className="data-menu-item" onClick={() => { void exportJSON(); setIsDataMenuOpen(false); }}>
+                    <Download size={16} /> Complet (JSON)
+                  </button>
+                  <button className="data-menu-item" onClick={() => { void exportMarkdown(currentWeekStart); setIsDataMenuOpen(false); }}>
+                    <Download size={16} /> Semaine (Markdown)
+                  </button>
+                  <button className="data-menu-item" onClick={() => { void exportICS(currentWeekStart); setIsDataMenuOpen(false); }}>
+                    <Download size={16} /> Semaine (ICS)
+                  </button>
+                </div>
+                <div className="data-menu-divider"></div>
+                <div className="data-menu-section">
+                  <div className="data-menu-label">Importer</div>
+                  <button className="data-menu-item" onClick={() => { importInputRef.current?.click(); }}>
+                    <Upload size={16} /> Fichier JSON ou ICS
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -90,14 +142,10 @@ export default function App() {
       <footer>
         <span className="footer-quote">&#171; La semaine est un cadeau. Planifiez-la avec soin. &#187;</span>
         <div className="footer-actions">
-          <button className="footer-btn" onClick={() => { void exportJSON(); }}>Exporter JSON</button>
-          <button className="footer-btn" onClick={() => { void exportMarkdown(currentWeekStart); }}>Exporter Markdown</button>
-          <button className="footer-btn" onClick={() => { void exportICS(currentWeekStart); }}>Exporter ICS</button>
-          <button className="footer-btn" onClick={() => { importInputRef.current?.click(); }}>Importer</button>
           <input
             ref={importInputRef}
             type="file"
-            accept=".json"
+            accept=".json,.ics"
             style={{ display: 'none' }}
             onChange={handleImport}
           />
@@ -118,6 +166,7 @@ export default function App() {
         </svg>
       </div>
 
+
       <div ref={pickerRef} className={`accent-picker ${isPickerVisible ? 'visible' : ''}`}>
         <div className="accent-label">Couleur d'accent</div>
         <div className="accent-swatches">
@@ -128,6 +177,6 @@ export default function App() {
           <div className="swatch" onClick={() => { changeAccent('#8A6A3A'); }} style={{ background: '#8A6A3A' }} title="Ocre"></div>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
