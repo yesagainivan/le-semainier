@@ -24,13 +24,14 @@ This roadmap is derived directly from the original `origin/proposition.md` visio
 
 ---
 
-## Phase 2: Polish (Upcoming)
+## Phase 2: Polish (Active)
 *Goal: Add quality-of-life features without adding clutter.*
 
 - [ ] Customizable font choice (persisted to `settings` table)
-- [ ] Time-blocking view option (vs. pure list)
+- [ ] Weekly Section: per-week intention + stat cards (fills desktop whitespace, adds ritual)
 - [x] Responsive design check (Mobile portrait polish)
-- [ ] Soft Dark Mode
+- [ ] Soft Dark Mode (charcoal-based, no blue tinge)
+- [ ] Time-blocking view *(deferred — conflicts with calm agenda philosophy; revisit only if user demand emerges)*
 
 ---
 

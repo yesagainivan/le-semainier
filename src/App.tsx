@@ -1,67 +1,126 @@
 import { useWeek } from '@/lib/useWeek';
-import { WeekGrid } from './components/week/WeekGrid'
-import { ExpandedDay } from './components/week/ExpandedDay'
-import { format, isSameMonth } from 'date-fns'
-import { fr } from 'date-fns/locale'
-import { useState, useRef, useEffect } from 'react'
-import { db } from '@/lib/db'
-import { exportJSON, importJSON, exportMarkdown, exportICS, importICS } from '@/lib/exportImport'
-import { Database, Download, Upload, Calendar } from 'lucide-react'
+import { WeekGrid } from './components/week/WeekGrid';
+import { ExpandedDay } from './components/week/ExpandedDay';
+import { WeeklySection } from './components/week/WeeklySection';
+import { format, isSameMonth, addDays } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { db } from '@/lib/db';
+import { exportJSON, importJSON, exportMarkdown, exportICS, importICS } from '@/lib/exportImport';
+import { Database, Download, Upload, Calendar } from 'lucide-react';
+
+// ── Font options ─────────────────────────────────────────────────────────────
+
+const FONT_OPTIONS = [
+  { id: 'spectral', family: "'Spectral', Georgia, serif", label: 'Spectral' },
+  { id: 'dm-sans', family: "'DM Sans', system-ui, sans-serif", label: 'DM Sans' },
+  { id: 'lora', family: "'Lora', Georgia, serif", label: 'Lora' },
+] as const;
+
+type FontId = typeof FONT_OPTIONS[number]['id'];
+
+// ── App ───────────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const { currentWeekStart, nextWeek, prevWeek, jumpToToday } = useWeek()
+  const { currentWeekStart, nextWeek, prevWeek, jumpToToday } = useWeek();
 
-  const endOfWeek = new Date(currentWeekStart)
-  endOfWeek.setDate(endOfWeek.getDate() + 6)
+  const weekStartStr = format(currentWeekStart, 'yyyy-MM-dd');
+  const endOfWeek = addDays(currentWeekStart, 6);
 
-  let weekLabel = ''
+  let weekLabel = '';
   if (isSameMonth(currentWeekStart, endOfWeek)) {
-    weekLabel = `${format(currentWeekStart, 'd')}–${format(endOfWeek, 'd MMMM yyyy', { locale: fr })}`
+    weekLabel = `${format(currentWeekStart, 'd')}–${format(endOfWeek, 'd MMMM yyyy', { locale: fr })}`;
   } else {
-    weekLabel = `${format(currentWeekStart, 'd MMM', { locale: fr })} – ${format(endOfWeek, 'd MMM yyyy', { locale: fr })}`
+    weekLabel = `${format(currentWeekStart, 'd MMM', { locale: fr })} – ${format(endOfWeek, 'd MMM yyyy', { locale: fr })}`;
   }
 
-  const [isPickerVisible, setIsPickerVisible] = useState(false)
-  const [isDataMenuOpen, setIsDataMenuOpen] = useState(false)
-  const pickerRef = useRef<HTMLDivElement>(null)
-  const fabRef = useRef<HTMLDivElement>(null)
-  const importInputRef = useRef<HTMLInputElement>(null)
-  const dataMenuRef = useRef<HTMLDivElement>(null)
-  const dataBtnRef = useRef<HTMLButtonElement>(null)
+  // ── UI state ──────────────────────────────────────────────────────────────
+  const [isPickerVisible, setIsPickerVisible] = useState(false);
+  const [isDataMenuOpen, setIsDataMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+  const [activeFont, setActiveFont] = useState<FontId>('spectral');
 
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const fabRef = useRef<HTMLDivElement>(null);
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const dataMenuRef = useRef<HTMLDivElement>(null);
+  const dataBtnRef = useRef<HTMLButtonElement>(null);
+
+  // ── Load persisted settings on mount ─────────────────────────────────────
+  useEffect(() => {
+    void (async () => {
+      const [accentSetting, fontSetting, darkSetting] = await Promise.all([
+        db.settings.get('accent-color'),
+        db.settings.get('font-body'),
+        db.settings.get('dark-mode'),
+      ]);
+
+      if (accentSetting?.value && typeof accentSetting.value === 'string') {
+        document.documentElement.style.setProperty('--terracotta', accentSetting.value);
+      }
+
+      const savedFont = fontSetting?.value as FontId | undefined;
+      if (savedFont) {
+        const opt = FONT_OPTIONS.find(f => f.id === savedFont);
+        if (opt) {
+          document.documentElement.style.setProperty('--font-body', opt.family);
+          setActiveFont(savedFont);
+        }
+      }
+
+      if (darkSetting?.value === true) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        setIsDark(true);
+      }
+    })();
+  }, []);
+
+  // ── Click-outside to close panels ─────────────────────────────────────────
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
         pickerRef.current && !pickerRef.current.contains(event.target as Node) &&
         fabRef.current && !fabRef.current.contains(event.target as Node)
       ) {
-        setIsPickerVisible(false)
+        setIsPickerVisible(false);
       }
       if (
         dataMenuRef.current && !dataMenuRef.current.contains(event.target as Node) &&
         dataBtnRef.current && !dataBtnRef.current.contains(event.target as Node)
       ) {
-        setIsDataMenuOpen(false)
+        setIsDataMenuOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => { document.removeEventListener('mousedown', handleClickOutside); }
-  }, [])
-
-  // Load persisted accent color on mount
-  useEffect(() => {
-    void db.settings.get('accent-color').then((setting) => {
-      if (setting?.value && typeof setting.value === 'string') {
-        document.documentElement.style.setProperty('--terracotta', setting.value);
-      }
-    });
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, []);
 
-  const changeAccent = (color: string) => {
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
+  const changeAccent = useCallback((color: string) => {
     document.documentElement.style.setProperty('--terracotta', color);
     void db.settings.put({ key: 'accent-color', value: color });
     setIsPickerVisible(false);
-  };
+  }, []);
+
+  const changeFont = useCallback((font: typeof FONT_OPTIONS[number]) => {
+    document.documentElement.style.setProperty('--font-body', font.family);
+    void db.settings.put({ key: 'font-body', value: font.id });
+    setActiveFont(font.id);
+  }, []);
+
+  const toggleDarkMode = useCallback(() => {
+    setIsDark(prev => {
+      const next = !prev;
+      if (next) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+      void db.settings.put({ key: 'dark-mode', value: next });
+      return next;
+    });
+  }, []);
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -76,9 +135,10 @@ export default function App() {
       alert(err instanceof Error ? err.message : "Erreur lors de l'import.");
     });
 
-    // Reset so the same file can be re-imported if needed
     e.target.value = '';
   };
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="app">
@@ -139,6 +199,8 @@ export default function App() {
         <WeekGrid />
       </div>
 
+      <WeeklySection weekStartStr={weekStartStr} />
+
       <footer>
         <span className="footer-quote">&#171; La semaine est un cadeau. Planifiez-la avec soin. &#187;</span>
         <div className="footer-actions">
@@ -154,6 +216,7 @@ export default function App() {
 
       <ExpandedDay />
 
+      {/* ── Settings FAB ────────────────────────────────────────────── */}
       <div
         ref={fabRef}
         className="settings-hint"
@@ -166,8 +229,9 @@ export default function App() {
         </svg>
       </div>
 
-
+      {/* ── Settings panel ──────────────────────────────────────────── */}
       <div ref={pickerRef} className={`accent-picker ${isPickerVisible ? 'visible' : ''}`}>
+        {/* Accent colour */}
         <div className="accent-label">Couleur d'accent</div>
         <div className="accent-swatches">
           <div className="swatch" onClick={() => { changeAccent('#B85C38'); }} style={{ background: '#B85C38' }} title="Terracotta"></div>
@@ -176,7 +240,39 @@ export default function App() {
           <div className="swatch" onClick={() => { changeAccent('#4A7A8A'); }} style={{ background: '#4A7A8A' }} title="Marine"></div>
           <div className="swatch" onClick={() => { changeAccent('#8A6A3A'); }} style={{ background: '#8A6A3A' }} title="Ocre"></div>
         </div>
+
+        {/* Font picker */}
+        <div className="font-picker">
+          <div className="accent-label">Police de lecture</div>
+          <div className="font-swatches">
+            {FONT_OPTIONS.map(font => (
+              <div
+                key={font.id}
+                className={`font-swatch ${activeFont === font.id ? 'active' : ''}`}
+                style={{ fontFamily: font.family }}
+                onClick={() => { changeFont(font); }}
+                title={font.label}
+                aria-label={font.label}
+              >
+                LS
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Dark mode toggle */}
+        <div className="dark-mode-toggle">
+          <span className="dark-mode-label">Mode sombre</span>
+          <button
+            className={`toggle-pill ${isDark ? 'on' : ''}`}
+            onClick={toggleDarkMode}
+            aria-label="Activer le mode sombre"
+            aria-pressed={isDark}
+          >
+            <span className="toggle-thumb" />
+          </button>
+        </div>
       </div>
-    </div >
-  )
+    </div>
+  );
 }
