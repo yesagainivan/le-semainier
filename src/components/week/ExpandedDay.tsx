@@ -81,17 +81,12 @@ export function ExpandedDay() {
                         className="overlay"
                         onClick={() => { void handleClose(); }}
                     />
-                    <m.div
-                        key="modal"
-                        className="modal"
-                        exit={{ opacity: 0, transition: { duration: 0.3 } }}
-                    >
-                        <ExpandedDayContent
-                            expandedDate={expandedDate}
-                            onRequestClose={() => { void handleClose(); }}
-                            onNotesSync={(notes: string) => { latestNotesRef.current = notes; }}
-                        />
-                    </m.div>
+                    <ExpandedDayContent
+                        key={`panel-${expandedDate}`}
+                        expandedDate={expandedDate}
+                        onRequestClose={() => { void handleClose(); }}
+                        onNotesSync={(notes: string) => { latestNotesRef.current = notes; }}
+                    />
                 </>
             )}
         </AnimatePresence>
