@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>06-v2-cafe-diamond</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="06-v2-cafe-diamond">
+            <rect id="Rectangle" fill="#FAF6EF" fill-rule="nonzero" x="0" y="0" width="512" height="512" rx="72"></rect>
+            <rect id="Rectangle" stroke="#2C2823" stroke-width="4" opacity="0.329868862" x="28" y="28" width="456" height="456" rx="50"></rect>
+            <rect id="Rectangle" stroke="#2C2823" stroke-width="3.5" x="52" y="52" width="408" height="408" rx="32"></rect>
+            <g id="ovals" opacity="0.55" transform="translate(88, 88)" fill="#2C2823" fill-rule="nonzero">
+                <circle id="Oval" cx="168.5" cy="4.5" r="4.5"></circle>
+                <circle id="Oval" cx="331.5" cy="168.5" r="4.5"></circle>
+                <circle id="Oval" cx="168.5" cy="331.5" r="4.5"></circle>
+                <circle id="Oval" cx="4.5" cy="168.5" r="4.5"></circle>
+            </g>
+            <g id="ovals-copy" opacity="0.55" transform="translate(256, 256) rotate(-45) translate(-256, -256)translate(93.8152, 93.8152)" fill="#2C2823" fill-rule="nonzero">
+                <circle id="Oval" cx="162.184812" cy="4.5" r="4.5"></circle>
+                <circle id="Oval" cx="319.869624" cy="162.184812" r="4.5"></circle>
+                <circle id="Oval" cx="162.184812" cy="319.869624" r="4.5"></circle>
+                <circle id="Oval" cx="4.5" cy="162.184812" r="4.5"></circle>
+            </g>
+            <g id="Group-Copy" transform="translate(66, 124)" fill-rule="nonzero">
+                <g id="Group" opacity="0.9" transform="translate(103.0067, 202.1916) rotate(-60) translate(-103.0067, -202.1916)translate(94.9764, 101.8128)" fill="#2C2823">
+                    <polygon id="Path" points="-3.3565146e-14 200.757576 16.0606061 200.757576 10.3246753 -1.33708478e-15 5.73593074 -1.33708478e-15"></polygon>
+                </g>
+                <g id="Group" opacity="0.95" transform="translate(124.1931, 161.8919) rotate(-36) translate(-124.1931, -161.8919)translate(115.0156, 50.0412)" fill="#2C2823">
+                    <polygon id="Path" points="-5.35551145e-15 223.701299 18.3549784 223.701299 11.4718615 -1.4424627e-14 6.88311688 -1.4424627e-14"></polygon>
+                </g>
+                <g id="Group" transform="translate(158.7614, 136.0308) rotate(-15) translate(-158.7614, -136.0308)translate(148.4367, 15.5763)" fill="#2C2823">
+                    <polygon id="Path" points="1.47780798e-15 240.909091 20.6493506 240.909091 13.1926407 1.12669682e-14 7.45670996 1.12669682e-14"></polygon>
+                </g>
+                <g id="Group" transform="translate(178, 0)" fill="#2C2823">
+                    <polygon id="Path" points="0 253 24 253 15.6 0 8.4 0"></polygon>
+                </g>
+                <g id="Group" transform="translate(221.1132, 136.0308) rotate(15) translate(-221.1132, -136.0308)translate(210.7885, 15.5763)" fill="#2C2823">
+                    <polygon id="Path" points="1.49510734e-15 240.909091 20.6493506 240.909091 13.1926407 -5.69629441e-15 7.45670996 -5.69629441e-15"></polygon>
+                </g>
+                <g id="Group" opacity="0.7" transform="translate(255.6815, 161.8919) rotate(36) translate(-255.6815, -161.8919)translate(247.6512, 50.0412)" fill="#C4985A">
+                    <polygon id="Path" points="-5.23939817e-15 223.701299 16.0606061 223.701299 10.3246753 -2.39501001e-14 5.73593074 -2.39501001e-14"></polygon>
+                </g>
+                <g id="Group" opacity="0.35" transform="translate(276.8679, 202.1916) rotate(60) translate(-276.8679, -202.1916)translate(269.9848, 101.8128)" fill="#C4985A">
+                    <polygon id="Path" points="1.31866587e-14 200.757576 13.7662338 200.757576 8.6038961 7.81731393e-16 5.16233766 7.81731393e-16"></polygon>
+                </g>
+                <circle id="Oval" fill="#C4985A" cx="190" cy="253" r="12"></circle>
+                <circle id="Oval" fill="#2C2823" cx="190" cy="252" r="7"></circle>
+            </g>
+        </g>
+    </g>
+</svg>
