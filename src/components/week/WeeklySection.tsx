@@ -1,5 +1,4 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { useRef, useCallback } from 'react';
+import { useRef, useState, useCallback, useLayoutEffect } from 'react';
 import { db } from '@/lib/db';
 import { useTasks } from '@/lib/useTasks';
 
@@ -8,29 +7,42 @@ interface WeeklySectionProps {
 }
 
 export function WeeklySection({ weekStartStr }: WeeklySectionProps) {
-    const intentionKey = `intention-${weekStartStr}`;
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const intentionKey = `intention-${weekStartStr}`;
 
-    // Own query — isolated from App, no App re-renders on task change
-    const { tasks } = useTasks();
+    // ── Single data source ────────────────────────────────────────────
+    //
+    // Tasks AND intention are fetched by the same useLiveQuery in
+    // useTasks(). Both resolve atomically in one Dexie subscription,
+    // eliminating the flicker that was caused by two independent async
+    // queries resolving at different times.
+    //
+    const { tasks, intention } = useTasks();
 
-    const intention = useLiveQuery(
-        () => db.settings.get(intentionKey),
-        [intentionKey]
-    );
+    // ── Controlled textarea ───────────────────────────────────────────
+    //
+    // localValue tracks what the user is typing. It syncs FROM the DB
+    // value (intention) whenever the remote value changes and the user
+    // isn't actively editing. No key-driven remounts, no unmount-blur
+    // races, no separate async queries.
+    //
+    const [localValue, setLocalValue] = useState('');
+    const [isFocused, setIsFocused] = useState(false);
+    const [syncedRemote, setSyncedRemote] = useState('');
 
-    // undefined = loading; null/object = resolved. Include loaded-flag in key
-    // so the textarea remounts once when data arrives (defaultValue syncs correctly)
-    const isLoaded = intention !== undefined;
-    const currentValue = typeof intention?.value === 'string' ? intention.value : '';
+    // Sync remote → local when DB data changes (not while editing)
+    if (intention !== syncedRemote) {
+        setSyncedRemote(intention);
+        if (!isFocused) {
+            setLocalValue(intention);
+        }
+    }
 
-    const handleBlur = useCallback(
-        (e: React.FocusEvent<HTMLTextAreaElement>) => {
-            const val = e.currentTarget.value.trim();
-            void db.settings.put({ key: intentionKey, value: val });
-        },
-        [intentionKey]
-    );
+    // Save to DB on blur
+    const handleBlur = useCallback(() => {
+        setIsFocused(false);
+        void db.settings.put({ key: intentionKey, value: localValue.trim() });
+    }, [intentionKey, localValue]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -39,14 +51,15 @@ export function WeeklySection({ weekStartStr }: WeeklySectionProps) {
         }
     };
 
-    // Grow textarea to content height
-    const handleInput = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
-        const el = e.currentTarget;
+    // Auto-grow: runs whenever localValue changes (mount, typing, DB sync)
+    useLayoutEffect(() => {
+        const el = textareaRef.current;
+        if (!el) return;
         el.style.height = 'auto';
         el.style.height = `${String(el.scrollHeight)}px`;
-    };
+    }, [localValue]);
 
-    // Derive stats — no extra Dexie query, runs off already-live tasks
+    // Derive stats — runs off already-live tasks, no extra query
     const total = tasks.length;
     const done = tasks.filter(t => t.completed).length;
     const remaining = total - done;
@@ -68,15 +81,13 @@ export function WeeklySection({ weekStartStr }: WeeklySectionProps) {
                 <textarea
                     ref={textareaRef}
                     className="intention-input"
-                    defaultValue={currentValue}
-                    // key changes when: week changes OR initial async load completes
-                    // — ensures defaultValue is applied on both events
-                    key={`${intentionKey}-${String(isLoaded)}`}
+                    value={localValue}
                     placeholder="Quelle est votre intention pour cette semaine ?"
                     rows={1}
+                    onFocus={() => { setIsFocused(true); }}
                     onBlur={handleBlur}
+                    onChange={(e) => { setLocalValue(e.target.value); }}
                     onKeyDown={handleKeyDown}
-                    onInput={handleInput}
                     aria-label="Intention de la semaine"
                 />
             </div>

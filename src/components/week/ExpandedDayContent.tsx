@@ -10,9 +10,11 @@ interface ExpandedDayContentProps {
     expandedDate: string;
     onRequestClose?: () => void;
     onNotesSync?: (notes: string) => void;
+    onNavigatePrev?: () => void;
+    onNavigateNext?: () => void;
 }
 
-export function ExpandedDayContent({ expandedDate, onRequestClose, onNotesSync }: ExpandedDayContentProps) {
+export function ExpandedDayContent({ expandedDate, onRequestClose, onNotesSync, onNavigatePrev, onNavigateNext }: ExpandedDayContentProps) {
     const { setExpandedDate } = useWeek();
     const { tasks, addTask, toggleTask, updateTask, deleteTask, saveNote } = useTasks();
     const liveNote = useNoteForDate(expandedDate);
@@ -77,6 +79,25 @@ export function ExpandedDayContent({ expandedDate, onRequestClose, onNotesSync }
                             {format(parseISO(expandedDate), 'd')} <span>{format(parseISO(expandedDate), 'MMMM', { locale: fr })}</span>
                         </div>
                     </div>
+                    {/* Mobile-only day navigation arrows — CSS hides them on desktop */}
+                    <div className="panel-day-nav">
+                        <button
+                            className="nav-btn"
+                            onClick={onNavigatePrev}
+                            disabled={!onNavigatePrev}
+                            aria-label="Jour précédent"
+                        >
+                            &#8592;
+                        </button>
+                        <button
+                            className="nav-btn"
+                            onClick={onNavigateNext}
+                            disabled={!onNavigateNext}
+                            aria-label="Jour suivant"
+                        >
+                            &#8594;
+                        </button>
+                    </div>
                     <button
                         className="panel-close"
                         onClick={() => {
@@ -110,15 +131,15 @@ export function ExpandedDayContent({ expandedDate, onRequestClose, onNotesSync }
                                             <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     </div>
-                                    <div className="panel-task-content" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <div className="panel-task-content">
                                         <input
                                             type="text"
                                             value={t.title}
                                             onChange={(e) => { void updateTask(t.id, { title: e.target.value }); }}
-                                            className="panel-task-title flex-1 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 w-full"
+                                            className="panel-task-title"
                                             style={{ textDecoration: t.completed ? 'line-through' : 'none', opacity: t.completed ? 0.45 : 1 }}
                                         />
-                                        <div className="panel-task-meta" style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                                        <div className="panel-task-meta">
                                             <input
                                                 type="time"
                                                 value={t.time ?? ''}
@@ -141,9 +162,9 @@ export function ExpandedDayContent({ expandedDate, onRequestClose, onNotesSync }
 
                                             <button
                                                 onClick={() => { void deleteTask(t.id); }}
-                                                className="text-muted-foreground/40 hover:text-terracotta transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                                                style={{ marginLeft: '4px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', lineHeight: 1 }}
+                                                className="panel-task-delete"
                                                 title="Supprimer"
+                                                aria-label="Supprimer la tâche"
                                             >
                                                 &#x2715;
                                             </button>
@@ -159,6 +180,7 @@ export function ExpandedDayContent({ expandedDate, onRequestClose, onNotesSync }
                             ref={inputRef}
                             className="add-task-input"
                             type="text"
+                            inputMode="text"
                             placeholder="Ajouter une tâche…"
                             value={newTaskTitle}
                             onChange={(e) => { setNewTaskTitle(e.target.value); }}

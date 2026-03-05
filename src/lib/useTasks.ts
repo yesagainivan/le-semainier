@@ -10,10 +10,24 @@ export function useTasks() {
 
     const weekStartStr = format(currentWeekStart, 'yyyy-MM-dd');
     const weekEndStr = format(addDays(currentWeekStart, 6), 'yyyy-MM-dd');
+    const intentionKey = `intention-${weekStartStr}`;
 
-    const tasks = useLiveQuery(
-        () => db.tasks.where('date').between(weekStartStr, weekEndStr, true, true).sortBy('order'),
-        [weekStartStr, weekEndStr]
+    // Single useLiveQuery for ALL week data — tasks + intention.
+    // Both resolve atomically in one Dexie subscription.
+    // This eliminates the flicker caused by two separate async queries
+    // resolving at different times.
+    const weekData = useLiveQuery(
+        async () => {
+            const [tasks, intentionRecord] = await Promise.all([
+                db.tasks.where('date').between(weekStartStr, weekEndStr, true, true).sortBy('order'),
+                db.settings.get(intentionKey),
+            ]);
+            return {
+                tasks,
+                intention: typeof intentionRecord?.value === 'string' ? intentionRecord.value : '',
+            };
+        },
+        [weekStartStr, weekEndStr, intentionKey]
     );
 
     const addTask = useCallback(async (date: string, title: string) => {
@@ -52,7 +66,8 @@ export function useTasks() {
     }, []);
 
     return {
-        tasks: tasks ?? [],
+        tasks: weekData?.tasks ?? [],
+        intention: weekData?.intention ?? '',
         addTask,
         toggleTask,
         deleteTask,

@@ -68,6 +68,14 @@ export function ExpandedDay() {
         return () => { document.removeEventListener('keydown', handleKeyDown); };
     }, [expandedDate, handleNavigate]);
 
+    // Derive boundary flags so nav arrows can be disabled at week edges
+    const weekDays = Array.from({ length: 7 }, (_, i) =>
+        format(addDays(currentWeekStart, i), 'yyyy-MM-dd')
+    );
+    const currentIndex = expandedDate ? weekDays.indexOf(expandedDate) : -1;
+    const canGoPrev = currentIndex > 0;
+    const canGoNext = currentIndex >= 0 && currentIndex < 6;
+
     return (
         <AnimatePresence>
             {expandedDate && (
@@ -86,6 +94,8 @@ export function ExpandedDay() {
                         expandedDate={expandedDate}
                         onRequestClose={() => { void handleClose(); }}
                         onNotesSync={(notes: string) => { latestNotesRef.current = notes; }}
+                        onNavigatePrev={canGoPrev ? () => { void handleNavigate(-1); } : undefined}
+                        onNavigateNext={canGoNext ? () => { void handleNavigate(1); } : undefined}
                     />
                 </>
             )}
